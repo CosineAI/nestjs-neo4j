@@ -4,7 +4,19 @@
 
 ## Description
 
-[Neo4j](https://neo4j.com/) module for [Nest.js](https://github.com/nestjs/nest).
+[NestJS](https://github.com/nestjs/nest) module to use [Neo4j](https://neo4j.com/) via the [Neo4j javascript driver](https://neo4j.com/docs/api/javascript-driver/current/).
+
+Built for NestJS v8+ and Node.js v18+
+
+It supports :
+
+- Connection pooling
+- Encryption, logging and other connection driver options
+- [Transactions](https://neo4j.com/docs/cypher-manual/current/clauses/transaction-control/)
+- CRUD helpers for [nodes and relationships](https://neo4j.com/docs/cypher-manual/current/clauses/matches)
+- [JSON](https://neo4j.com/docs/javascript-manual/current/session-track-transactions/#parameter-json) and [Streaming](https://neo4j.com/docs/javascript-manual/current/session-run/) protocol options
+- [Neo4j reactive](https://neo4j.com/docs/javascript-manual/current/reactive-programming/) driver API
+- Seed values for Neo4j in [E2e tests](#examples)
 
 [![e2e-test](https://github.com/nhogs/nestjs-neo4j/actions/workflows/e2e-test.yml/badge.svg)](https://github.com/Nhogs/nestjs-neo4j/actions/workflows/e2e-test.yml)
 [![Docker-tested-version](https://img.shields.io/badge/E2e%20tests%20on-neo4j%3A5.10.0--enterprise-blue?logo=docker)](https://registry.hub.docker.com/_/neo4j/tags)
@@ -24,11 +36,17 @@
 $ npm i --save @nhogs/nestjs-neo4j
 ```
 
+_Install ```@nestj/core```, ```reflect-metadata``` and ```neo4j-driver``` packages manually, their depedendencies will be fetched automatically._
+
 ## Usage
 
 ### In static module definition:
 
 ```typescript
+import { Module } from '@nestjs/common';
+import { CatsModule } from './cats/cats.module';
+import { Neo4jModule } from '@nhogs/nestjs-neo4j';
+
 @Module({
   imports: [
     Neo4jModule.forRoot({
@@ -49,6 +67,11 @@ export class AppModule {}
 ### In async module definition:
 
 ```typescript
+import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
+import { PersonModule } from './person/person.module';
+import { Neo4jConfig, Neo4jModule } from '@nhogs/nestjs-neo4j';
+
 @Module({
   imports: [
     Neo4jModule.forRootAsync({
@@ -66,16 +89,24 @@ export class AppModule {}
     }),
     PersonModule,
     ConfigModule.forRoot({
-      envFilePath: './test/src/.test.env',
+      envFilePath: '.env',
     }),
   ],
 })
 export class AppAsyncModule {}
 ```
 
-### [🔗 Neo4jService](/lib/service/neo4j.service.ts) :
+### Neo4jService :
+
+[🔗 Source Code](/lib/service/neo4j.service.ts)
+
 
 ```typescript
+import { Injectable, OnApplicationShutdown } from '@nestjs/common';
+import { Driver } from 'neo4j-driver';
+import { Inject } from '@nestjs/common';
+import { NEO4J_CONFIG, NEO4J_DRIVER } from '@nhogs/nestjs-neo4j';
+
 @Injectable()
 /** See https://neo4j.com/docs/api/javascript-driver/current/ for details ...*/
 export class Neo4jService implements OnApplicationShutdown {
@@ -152,6 +183,7 @@ export class CatService {
 ### Run with reactive session
 
 ```typescript
+// Simple example with rxRun
 neo4jService
   .rxRun({ cypher: 'MATCH (n) RETURN count(n) AS count' })
   .records()
