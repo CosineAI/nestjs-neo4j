@@ -30,18 +30,18 @@ $ npm i --save @nhogs/nestjs-neo4j
 
 ```typescript
 @Module({
-  imports: [
-    Neo4jModule.forRoot({
-      scheme: 'neo4j',
-      host: 'localhost',
-      port: '7687',
-      database: 'neo4j',
-      username: 'neo4j',
-      password: 'test',
-      global: true, // to register in the global scope
-    }),
-    CatsModule,
-  ],
+    imports: [
+        Neo4jModule.forRoot({
+            scheme: 'neo4j',
+            host: 'localhost',
+            port: '7687',
+            database: 'neo4j',
+            username: 'neo4j',
+            password: 'test',
+            global: true, // to register in the global scope
+        }),
+        CatsModule,
+    ],
 })
 export class AppModule {}
 ```
@@ -50,25 +50,25 @@ export class AppModule {}
 
 ```typescript
 @Module({
-  imports: [
-    Neo4jModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService): Neo4jConfig => ({
-        scheme: configService.get('NEO4J_SCHEME'),
-        host: configService.get('NEO4J_HOST'),
-        port: configService.get('NEO4J_PORT'),
-        username: configService.get('NEO4J_USERNAME'),
-        password: configService.get('NEO4J_PASSWORD'),
-        database: configService.get('NEO4J_DATABASE'),
-      }),
-      global: true,
-    }),
-    PersonModule,
-    ConfigModule.forRoot({
-      envFilePath: './test/src/.test.env',
-    }),
-  ],
+    imports: [
+        Neo4jModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService): Neo4jConfig => ({
+                scheme: configService.get('NEO4J_SCHEME'),
+                host: configService.get('NEO4J_HOST'),
+                port: configService.get('NEO4J_PORT'),
+                username: configService.get('NEO4J_USERNAME'),
+                password: configService.get('NEO4J_PASSWORD'),
+                database: configService.get('NEO4J_DATABASE'),
+            }),
+            global: true,
+        }),
+        PersonModule,
+        ConfigModule.forRoot({
+            envFilePath: './test/src/.test.env',
+        }),
+    ],
 })
 export class AppAsyncModule {}
 ```
@@ -182,24 +182,24 @@ https://neo4j.com/docs/cypher-manual/current/constraints/
 ```typescript
 @Node({ label: 'Person' })
 export class PersonDto {
-  @NodeKey({ additionalKeys: ['firstname'] })
-  name: string;
+    @NodeKey({ additionalKeys: ['firstname'] })
+    name: string;
 
-  @NotNull()
-  firstname: string;
+    @NotNull()
+    firstname: string;
 
-  @NotNull()
-  @Unique()
-  surname: string;
+    @NotNull()
+    @Unique()
+    surname: string;
 
-  @NotNull()
-  age: number;
+    @NotNull()
+    age: number;
 }
 
 @Relationship({ type: 'WORK_IN' })
 export class WorkInDto {
-  @NotNull()
-  since: Date;
+    @NotNull()
+    since: Date;
 }
 ```
 
@@ -255,54 +255,54 @@ Look at [🔗 E2e tests usage](spec/e2e) for more details
 
 @Injectable()
 export class CatsService extends Neo4jNodeModelService<Cat> {
-  constructor(protected readonly neo4jService: Neo4jService) {
-    super();
-  }
-
-  label = 'Cat';
-  logger = undefined;
-
-  fromNeo4j(model: Record<string, any>): Cat {
-    return super.fromNeo4j({
-      ...model,
-      age: model.age.toNumber(),
-    });
-  }
-
-  toNeo4j(cat: Record<string, any>): Record<string, any> {
-    let result: Record<string, any> = { ...cat };
-
-    if (!isNaN(result.age)) {
-      result.age = int(result.age);
+    constructor(protected readonly neo4jService: Neo4jService) {
+        super();
     }
 
-    return super.toNeo4j(result);
-  }
+    label = 'Cat';
+    logger = undefined;
 
-  // Add a property named 'created' with timestamp on creation
-  protected timestamp = 'created';
+    fromNeo4j(model: Record<string, any>): Cat {
+        return super.fromNeo4j({
+            ...model,
+            age: model.age.toNumber(),
+        });
+    }
 
-  findByName(
-    name: string,
-    options?: {
-      skip?: number;
-      limit?: number;
-      orderBy?: string;
-      descending?: boolean;
-    },
-  ) {
-    return super.findBy({ name }, options);
-  }
+    toNeo4j(cat: Record<string, any>): Record<string, any> {
+        let result: Record<string, any> = { ...cat };
 
-  searchByName(
-    name: string,
-    options?: {
-      skip?: number;
-      limit?: number;
-    },
-  ) {
-    return super.searchBy('name', name.split(' '), options);
-  }
+        if (!isNaN(result.age)) {
+            result.age = int(result.age);
+        }
+
+        return super.toNeo4j(result);
+    }
+
+    // Add a property named 'created' with timestamp on creation
+    protected timestamp = 'created';
+
+    findByName(
+        name: string,
+        options?: {
+            skip?: number;
+            limit?: number;
+            orderBy?: string;
+            descending?: boolean;
+        },
+    ) {
+        return super.findBy({ name }, options);
+    }
+
+    searchByName(
+        name: string,
+        options?: {
+            skip?: number;
+            limit?: number;
+        },
+    ) {
+        return super.searchBy('name', name.split(' '), options);
+    }
 }
 ```
 
